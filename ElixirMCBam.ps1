@@ -46,9 +46,9 @@ Write-Host -ForegroundColor Magenta "
 ██║░░░░░██║░░░██║╚██╗░██╔╝██║█████╗█████╗░░██║░░░░░░╚███╔╝░██████╔╝
 ██║░░░░░██║░░░██║░╚████╔╝░██║╚════╝██╔══╝░░██║░░░░░░██╔██╗░██╔══██╗
 ███████╗╚██████╔╝░░╚██╔╝░░██║░░░░░░███████╗███████╗██╔╝╚██╗██║░░██║
-╚══════╝░╚═════╝░░░░╚═╝░░░╚═╝░░░░░░╚══════╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝
+╚══════╝░╚═════╝░░░░╚═╝░░░╚═╝░░░░░░╚══════╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝"
 Write-Host "";
-Write-Host -ForegroundColor Pink " https://discord.gg/elixirmc - Tranquilo, estas en manos de expertos - bmseey"; -NewLine
+Write-Host -ForegroundColor Pink " https://discord.gg/elixirmc - https://discord.gg/luvicraft - Tranquilo, estas en manos de expertos - bmseey"; -NewLine
 Write-Host "";
 
 function Test-Admin {;$currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent());$currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator);}
