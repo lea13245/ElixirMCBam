@@ -1,118 +1,132 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 function Get-Signature {
+
     [CmdletBinding()]
-    param ([string[]]$FilePath)
+     param (
+        [string[]]$FilePath
+    )
 
     $Existence = Test-Path -PathType "Leaf" -Path $FilePath
     $Authenticode = (Get-AuthenticodeSignature -FilePath $FilePath -ErrorAction SilentlyContinue).Status
+    $Signature = "Invalid Signature (UnknownError)"
+
     if ($Existence) {
-        switch ($Authenticode) {
-            'Valid'         { return "Firma Válida" }
-            'NotSigned'     { return "Firma Inválida (No está firmado)" }
-            'HashMismatch'  { return "Firma Inválida (HashMismatch)" }
-            'NotTrusted'    { return "Firma Inválida (No es de confianza)" }
-            'UnknownError'  { return "Firma Inválida (Error desconocido)" }
-            default         { return "Firma Inválida (Error desconocido)" }
+        if ($Authenticode -eq "Valid") {
+            $Signature = "Firma Valida"
         }
+        elseif ($Authenticode -eq "NotSigned") {
+            $Signature = "Firma Invalida (No esta firmado)"
+        }
+        elseif ($Authenticode -eq "HashMismatch") {
+            $Signature = "Firma Invalida (HashMismatch)"
+        }
+        elseif ($Authenticode -eq "NotTrusted") {
+            $Signature = "Firma Invalida (NotTrusted)"
+        }
+        elseif ($Authenticode -eq "UnknownError") {
+            $Signature = "Firma Invalida (UnknownError)"
+        }
+        return $Signature
     } else {
-        return "El archivo no fue encontrado"
+        $Signature = "El archivo no fue encontrado"
+        return $Signature
     }
 }
 
 Clear-Host
-Write-Host ""; Write-Host ""; Write-Host "Tranquilo, estás en manos de expertos"; Write-Host ""
-Write-Host -ForegroundColor Magenta """
+
+Write-Host "";
+Write-Host ""; Tranqui
+Write-Host "";
+Write-Host -ForegroundColor Magenta " 
 ██╗░░░░░██╗░░░██╗██╗░░░██╗██╗░░░░░░███████╗██╗░░░░░██╗░░██╗██████╗░
 ██║░░░░░██║░░░██║██║░░░██║██║░░░░░░██╔════╝██║░░░░░╚██╗██╔╝██╔══██╗
 ██║░░░░░██║░░░██║╚██╗░██╔╝██║█████╗█████╗░░██║░░░░░░╚███╔╝░██████╔╝
 ██║░░░░░██║░░░██║░╚████╔╝░██║╚════╝██╔══╝░░██║░░░░░░██╔██╗░██╔══██╗
 ███████╗╚██████╔╝░░╚██╔╝░░██║░░░░░░███████╗███████╗██╔╝╚██╗██║░░██║
-╚══════╝░╚═════╝░░░░╚═╝░░░╚═╝░░░░░░╚══════╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝"""
-Write-Host ""
-Write-Host -ForegroundColor Pink " https://discord.gg/elixirmc - https://discord.gg/luvicraft - Tranquilo, estas en manos de expertos - bmseey"
-Write-Host ""
+╚══════╝░╚═════╝░░░░╚═╝░░░╚═╝░░░░░░╚══════╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝" 
+Write-Host "";
+Write-Host -ForegroundColor Pink " https://discord.gg/elixirmc - Tranquilo, estas en manos de expertos - bmseey"; -NewLine
+Write-Host "";
 
-function Test-Admin {
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    return $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-}
-
+function Test-Admin {;$currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent());$currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator);}
 if (!(Test-Admin)) {
-    Write-Warning "Abre PowerShell como administrador."
+    Write-Warning "abre cmd como admin"
     Start-Sleep 10
     Exit
 }
 
 $sw = [Diagnostics.Stopwatch]::StartNew()
 
-if (!(Get-PSDrive -Name HKLM -PSProvider Registry)) {
-    Try { New-PSDrive -Name HKLM -PSProvider Registry -Root HKEY_LOCAL_MACHINE }
-    Catch { Write-Warning "Error montando HKEY_LOCAL_MACHINE" }
+if (!(Get-PSDrive -Name HKLM -PSProvider Registry)){
+    Try{New-PSDrive -Name HKLM -PSProvider Registry -Root HKEY_LOCAL_MACHINE}
+    Catch{Write-Warning "Error montando HKEY_Local_Machine"}
 }
-
 $bv = ("bam", "bam\State")
-Try {
-    $Users = foreach ($ii in $bv) {
-        Get-ChildItem -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$ii\UserSettings\" | Select-Object -ExpandProperty PSChildName
-    }
-} Catch {
-    Write-Warning "Error parseando BAM Key. Probablemente no soporta tu versión de Windows."
+Try{$Users = foreach($ii in $bv){Get-ChildItem -Path "HKLM:\SYSTEM\CurrentControlSet\Services\$($ii)\UserSettings\" | Select-Object -ExpandProperty PSChildName}}
+Catch{
+    Write-Warning "Error Parseando BAM Key. Probablemente no soporta tu version de Windows "
     Exit
 }
+$rpath = @("HKLM:\SYSTEM\CurrentControlSet\Services\bam\","HKLM:\SYSTEM\CurrentControlSet\Services\bam\state\")
 
-$rpath = @("HKLM:\SYSTEM\CurrentControlSet\Services\bam\", "HKLM:\SYSTEM\CurrentControlSet\Services\bam\state\")
-$TimeInfo = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation"
-$UserTime = $TimeInfo.TimeZoneKeyName
-$UserBias = $TimeInfo.ActiveTimeBias
-$UserDay = $TimeInfo.DaylightBias
+$UserTime = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation").TimeZoneKeyName
+$UserBias = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation").ActiveTimeBias
+$UserDay = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation").DaylightBias
 
-$Bam = foreach ($Sid in $Users) {
-    foreach ($rp in $rpath) {
-        $BamItems = Get-Item -Path "$rp\UserSettings\$Sid" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Property
-        Write-Host -ForegroundColor Green "Extrayendo " -NoNewLine
-        Write-Host -ForegroundColor Blue "$rp\UserSettings\$Sid"
+$Bam = Foreach ($Sid in $Users){$u++
+            
+        foreach($rp in $rpath){
+           $BamItems = Get-Item -Path "$($rp)UserSettings\$Sid" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Property
+           Write-Host -ForegroundColor Green "Extrayendo " -NoNewLine
+           Write-Host -ForegroundColor Blue "$($rp)UserSettings\$SID"
+           $bi = 0 
 
-        try {
+            Try{
             $objSID = New-Object System.Security.Principal.SecurityIdentifier($Sid)
-            $User = $objSID.Translate([System.Security.Principal.NTAccount]).Value
-        } catch { $User = "" }
-
-        foreach ($Item in $BamItems) {
-            $Key = Get-ItemProperty -Path "$rp\UserSettings\$Sid" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $Item
-            if ($Key.Length -eq 24) {
-                $Hex = [System.BitConverter]::ToString($Key[7..0]) -replace "-", ""
-                $TimeLocal = Get-Date ([DateTime]::FromFileTime([Convert]::ToInt64($Hex, 16))) -Format "yyyy-MM-dd HH:mm:ss"
-                $TimeUTC = Get-Date ([DateTime]::FromFileTimeUtc([Convert]::ToInt64($Hex, 16))) -Format "yyyy-MM-dd HH:mm:ss"
-                $Bias = -([Convert]::ToInt32([Convert]::ToString($UserBias,2),2))
-                $TimeUser = (Get-Date ([DateTime]::FromFileTimeUtc([Convert]::ToInt64($Hex, 16))).AddMinutes($Bias)) -Format "yyyy-MM-dd HH:mm:ss"
-
-                $parts = ($Item -split '\\')
-                $d = if ($parts.Count -gt 3 -and $parts[3] -match '\d') { (Split-Path -Path $Item).Substring(23).TrimStart("\Device\HarddiskVolume") } else { "" }
-                $f = if ($parts.Count -gt 3 -and $parts[3] -match '\d') { Split-Path -Leaf $Item.TrimStart() } else { $Item }
-                $cp = if ($parts.Count -gt 3 -and $parts[3] -match '\d') { $Item.Remove(1,23) } else { "" }
-                $path = if ($parts.Count -gt 3 -and $parts[3] -match '\d') { Join-Path -Path "C:" -ChildPath $cp } else { "" }
-                $sig = if ($parts.Count -gt 3 -and $parts[3] -match '\d') { Get-Signature -FilePath $path } else { "" }
-
-                [PSCustomObject]@{
-                    "Tiempo del examinador" = $TimeLocal
-                    "Tiempo de última ejecución (UTC)" = $TimeUTC
-                    "Tiempo de última ejecución (Hora del usuario)" = $TimeUser
-                    "Application" = $f
-                    "Path" = $path
-                    "Signature" = $sig
-                    "User" = $User
-                    "SID" = $Sid
-                    "Regpath" = $rp
-                }
+            $User = $objSID.Translate( [System.Security.Principal.NTAccount]) 
+            $User = $User.Value
             }
-        }
-    }
-}
+            Catch{$User=""}
+            $i=0
+            ForEach ($Item in $BamItems){$i++
+		    $Key = Get-ItemProperty -Path "$($rp)UserSettings\$Sid" -ErrorAction SilentlyContinue| Select-Object -ExpandProperty $Item
+	
+            If($key.length -eq 24){
+                $Hex=[System.BitConverter]::ToString($key[7..0]) -replace "-",""
+                $TimeLocal = Get-Date ([DateTime]::FromFileTime([Convert]::ToInt64($Hex, 16))) -Format "yyyy-MM-dd HH:mm:ss"
+			    $TimeUTC = Get-Date ([DateTime]::FromFileTimeUtc([Convert]::ToInt64($Hex, 16))) -Format "yyyy-MM-dd HH:mm:ss"
+			    $Bias = -([convert]::ToInt32([Convert]::ToString($UserBias,2),2))
+			    $Day = -([convert]::ToInt32([Convert]::ToString($UserDay,2),2)) 
+			    $Biasd = $Bias/60
+			    $Dayd = $Day/60
+			    $TImeUser = (Get-Date ([DateTime]::FromFileTimeUtc([Convert]::ToInt64($Hex, 16))).addminutes($Bias) -Format "yyyy-MM-dd HH:mm:ss") 
+			    $d = if((((split-path -path $item) | ConvertFrom-String -Delimiter "\\").P3)-match '\d{1}')
+			    {((split-path -path $item).Remove(23)).trimstart("\Device\HarddiskVolume")} else {$d = ""}
+			    $f = if((((split-path -path $item) | ConvertFrom-String -Delimiter "\\").P3)-match '\d{1}')
+			    {Split-path -leaf ($item).TrimStart()} else {$item}	
+			    $cp = if((((split-path -path $item) | ConvertFrom-String -Delimiter "\\").P3)-match '\d{1}')
+			    {($item).Remove(1,23)} else {$cp = ""}
+			    $path = if((((split-path -path $item) | ConvertFrom-String -Delimiter "\\").P3)-match '\d{1}')
+			    {Join-Path -Path "C:" -ChildPath $cp} else {$path = ""}			
+			    $sig = if((((split-path -path $item) | ConvertFrom-String -Delimiter "\\").P3)-match '\d{1}')
+			    {Get-Signature -FilePath $path} else {$sig = ""}				
+                [PSCustomObject]@{
+                            'Tiempo del examinador' = $TimeLocal
+						    'Tiempo de ultima ejecucion (UTC)'= $TimeUTC
+						    'Tiempo de ultima ejecucion (Hora del usuario)' = $TimeUser
+						     Application = 	$f
+						     Path =  		$path
+                             Signature =          $Sig
+						     User =         $User
+						     SID =          $Sid
+                             Regpath =        $rp
+                             }}}}}
 
-$Bam | Out-GridView -PassThru -Title "Entradas BAM: $($Bam.Count) - Zona Horaria del Usuario: ($UserTime)"
+$Bam | Out-GridView -PassThru -Title "Entradas BAM: $($Bam.count)  - Zona Horaria del Usuario: ($UserTime) -> ActiveBias: ( $Bias) - DayLightTime: ($Day)"
 
-$sw.Stop()
+$sw.stop()
 $t = $sw.Elapsed.TotalMinutes
 Write-Host ""
-Write-Host "Se tardó $t minutos." -ForegroundColor Yellow
+Write-Host "Se tardo $t Minutos" -ForegroundColor Yello
